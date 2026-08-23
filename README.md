@@ -64,9 +64,19 @@ npm run lint            # lint both apps
 
 The two apps deploy independently.
 
-**Web (apps/web)** — deploy to Vercel: import the repo, set the project root to
-`apps/web` (framework: Vite). Set `VITE_API_URL` to your deployed server's URL. A
-`vercel.json` with SPA rewrites is already included.
+**Web (apps/web)** — deploy to Vercel. Two ways to point Vercel at the right app in
+this monorepo — pick one:
+- In the Vercel project's Settings → General, set **Root Directory** to `apps/web`
+  (framework: Vite). `apps/web/vercel.json` (SPA rewrites) takes over from there.
+- Or leave Root Directory as the repo root — the root `vercel.json` already sets
+  `installCommand`/`buildCommand`/`outputDirectory` to build just `apps/web` and
+  deploy `apps/web/dist`, with no dashboard changes needed.
+
+Either way, set the `VITE_API_URL` env var in the Vercel project to your deployed
+server's URL (see below) — **the web app calls a relative `/api` path by default,
+which has nothing to talk to once it's static-hosted on Vercel**, so check this
+first if the site loads but nothing works (login, signup, etc. fail silently or
+with network errors).
 
 **Server (apps/server)** — deploy anywhere that runs a Docker container or a plain
 Node process (Render, Fly.io, Railway, a VPS):
