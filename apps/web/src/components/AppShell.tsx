@@ -20,7 +20,7 @@ import { useBond } from '../context/BondContext';
 import { useRealtimeSync } from '../lib/realtimeSync';
 import { useState } from 'react';
 import clsx from 'clsx';
-import { LogoMark } from './Logo';
+import { Wordmark } from './Logo';
 
 const NAV = [
   { to: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -53,9 +53,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div style={themeStyle} className="min-h-screen flex flex-col sm:flex-row bg-[var(--color-cream-50)]">
       <aside className="hidden sm:flex sm:flex-col w-60 shrink-0 border-r border-black/5 bg-white/60 backdrop-blur-sm px-4 py-6">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 px-2 mb-6">
-          <LogoMark size={30} />
-          <span className="font-display text-xl text-[var(--color-ink)]">vialove</span>
+        <button onClick={() => navigate('/dashboard')} className="flex items-center px-2 mb-6">
+          <Wordmark size={26} />
         </button>
 
         <BondSwitcher
@@ -91,9 +90,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <header className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-black/5 bg-white/70 backdrop-blur-sm sticky top-0 z-20">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2">
-          <LogoMark size={26} />
-          <span className="font-display text-lg text-[var(--color-ink)]">vialove</span>
+        <button onClick={() => navigate('/dashboard')} className="flex items-center">
+          <Wordmark size={22} />
         </button>
         <button
           onClick={() => logout()}

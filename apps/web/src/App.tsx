@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
 import { useBond } from './context/BondContext';
 import { AppShell } from './components/AppShell';
-import { LogoMark } from './components/Logo';
+import { LogoMark, Wordmark } from './components/Logo';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Welcome from './pages/Welcome';
@@ -20,8 +20,9 @@ import Profile from './pages/Profile';
 
 function SplashLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-cream-50)]">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[var(--color-cream-50)]">
       <LogoMark size={48} className="animate-breathe" />
+      <Wordmark size={22} />
     </div>
   );
 }

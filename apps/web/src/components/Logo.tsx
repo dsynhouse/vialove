@@ -61,7 +61,7 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
 export function Wordmark({ size = 48, className }: { size?: number; className?: string }) {
   return (
     <span
-      className={clsx('inline-flex items-center font-display font-extrabold', className)}
+      className={clsx('inline-flex items-center font-display font-bold', className)}
       style={{ color: 'var(--logo-ink, #7d1f2e)', fontSize: size }}
     >
       vial
