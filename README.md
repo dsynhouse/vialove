@@ -89,6 +89,11 @@ Node process (Render, Fly.io, Railway, a VPS):
   and cookie handling), `JWT_SECRET` (a long random string), `DATABASE_PATH`, and
   `COOKIE_SECURE=true` (needed once the web app and API are on different domains, so the
   auth cookie can be sent cross-site).
+- Optional: `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS`/`SMTP_FROM` for sending
+  password-reset emails — any SMTP provider works (Gmail, SendGrid, Resend, Postmark,
+  SES, ...). **Without these set, password-reset links are logged to the server console
+  instead of emailed** — fine for local dev, but set them in production or nobody can
+  actually receive their reset link.
 
 **Local full-stack via Docker** — `docker compose up --build` runs just the server in a
 container with a persisted volume; run the web app with `npm run dev:web` against it.

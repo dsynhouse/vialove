@@ -61,6 +61,10 @@ export const authApi = {
   login: (email: string, password: string) => post<User>('/api/auth/login', { email, password }),
   logout: () => post<void>('/api/auth/logout'),
   me: () => request<User>('/api/auth/me'),
+  forgotPassword: (email: string) =>
+    post<{ message: string; devResetUrl?: string }>('/api/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    post<User>('/api/auth/reset-password', { token, password }),
 };
 
 // ---- Bonds ----

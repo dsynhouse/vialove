@@ -7,6 +7,8 @@ import { AppShell } from './components/AppShell';
 import { LogoMark, Wordmark } from './components/Logo';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Welcome from './pages/Welcome';
 import Dashboard from './pages/Dashboard';
 import CheckIn from './pages/CheckIn';
@@ -91,6 +93,8 @@ export default function App() {
       />
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/welcome" element={<RequireAuth><Welcome /></RequireAuth>} />
 
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />

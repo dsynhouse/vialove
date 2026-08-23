@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { randomBytes, createHash } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { env } from './env.js';
 
@@ -48,4 +49,15 @@ export function clearAuthCookie(res: Response) {
 
 export function getTokenFromRequest(req: Request): string | undefined {
   return req.cookies?.[COOKIE_NAME];
+}
+
+/** Generates a password-reset token: the raw value (goes in the email link,
+ * never stored) and its hash (stored in the DB, so a leaked DB row is useless). */
+export function generateResetToken(): { raw: string; hash: string } {
+  const raw = randomBytes(32).toString('hex');
+  return { raw, hash: hashResetToken(raw) };
+}
+
+export function hashResetToken(raw: string): string {
+  return createHash('sha256').update(raw).digest('hex');
 }

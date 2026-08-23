@@ -89,6 +89,16 @@ CREATE TABLE `mindful_logs` (
 	FOREIGN KEY (`person_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `password_reset_tokens` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`token_hash` text NOT NULL,
+	`expires_at` text NOT NULL,
+	`used_at` text,
+	`created_at` text DEFAULT (current_timestamp) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `support_signals` (
 	`id` text PRIMARY KEY NOT NULL,
 	`bond_id` text NOT NULL,
@@ -143,6 +153,7 @@ CREATE TABLE `weekly_responses` (
 CREATE UNIQUE INDEX `bond_members_bond_user_idx` ON `bond_members` (`bond_id`,`user_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `bonds_invite_code_unique` ON `bonds` (`invite_code`);--> statement-breakpoint
 CREATE UNIQUE INDEX `goal_cheers_goal_person_idx` ON `goal_cheers` (`goal_id`,`person_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `password_reset_tokens_token_hash_unique` ON `password_reset_tokens` (`token_hash`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE UNIQUE INDEX `weekly_pulses_bond_week_idx` ON `weekly_pulses` (`bond_id`,`week_of`);--> statement-breakpoint
 CREATE UNIQUE INDEX `weekly_responses_pulse_person_idx` ON `weekly_responses` (`pulse_id`,`person_id`);

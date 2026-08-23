@@ -182,3 +182,14 @@ export const supportSignals = sqliteTable('support_signals', {
     .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: createdAt(),
 });
+
+export const passwordResetTokens = sqliteTable('password_reset_tokens', {
+  id: id(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  usedAt: text('used_at'),
+  createdAt: createdAt(),
+});
