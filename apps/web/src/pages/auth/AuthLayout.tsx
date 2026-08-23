@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { LogoMark } from '../../components/Logo';
+import { Wordmark } from '../../components/Logo';
 
 export function AuthLayout({ children, subtitle }: { children: ReactNode; subtitle: string }) {
   return (
@@ -9,9 +9,8 @@ export function AuthLayout({ children, subtitle }: { children: ReactNode; subtit
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <LogoMark size={56} className="mx-auto mb-3 animate-float-slow" />
-          <h1 className="font-display text-4xl text-[var(--color-ink)] leading-tight">vialove</h1>
-          <p className="text-black/50 mt-2 text-[15px]">{subtitle}</p>
+          <Wordmark size={44} className="justify-center animate-float-slow" />
+          <p className="text-black/50 mt-3 text-[15px]">{subtitle}</p>
         </div>
         {children}
       </div>

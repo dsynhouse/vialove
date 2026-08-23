@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Fraunces", "Georgia", serif;
-  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-display: "Baloo 2", "Segoe UI", sans-serif;
+  --font-sans: "Nunito", "Segoe UI", sans-serif;
   --font-hand: "Caveat", cursive;
 
   /* Bond accent palette — reassigned per bond type at runtime via CSS vars */
@@ -23,9 +23,11 @@
 }
 
 :root {
-  --accent: #c1694f;
-  --accent-soft: #f2ded6;
-  --accent-strong: #9c4a34;
+  /* Brand default (pre-bond-selection screens: auth, welcome) — matches the
+     wordmark's maroon-on-blush; each bond type overrides these once active. */
+  --accent: #8a2438;
+  --accent-soft: #f3d9d2;
+  --accent-strong: #6b1626;
 }
 
 html {

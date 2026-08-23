@@ -9,7 +9,7 @@ import { bondsApi, ApiError } from '../lib/api';
 import { useBond } from '../context/BondContext';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card } from '../components/ui';
-import { LogoMark } from '../components/Logo';
+import { LogoMark, Wordmark } from '../components/Logo';
 
 const ICONS: Record<string, typeof Heart> = { Heart, Sprout, Users, Users2, Sparkles };
 
@@ -57,10 +57,12 @@ export default function Welcome() {
     >
       <div className="w-full max-w-xl">
         <div className="text-center mb-8 relative">
-          <LogoMark size={48} className="mx-auto mb-3 animate-float-slow" />
-          <h1 className="font-display text-4xl text-[var(--color-ink)] leading-tight">
-            {step === 'choose' ? `Hi ${user?.name}` : 'vialove'}
-          </h1>
+          <LogoMark size={44} className="mx-auto mb-3 animate-float-slow" />
+          {step === 'choose' ? (
+            <h1 className="font-display text-4xl text-[var(--color-ink)] leading-tight">Hi {user?.name}</h1>
+          ) : (
+            <Wordmark size={36} className="justify-center" />
+          )}
           <p className="text-black/50 mt-2 text-[15px]">
             {step === 'choose' && 'Start a new bond, or join one you were invited to.'}
             {step === 'create-pick' && 'Pick the bond you want to nurture.'}

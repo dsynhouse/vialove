@@ -1,14 +1,15 @@
-<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path
-    d="M50 8c15 0 32 4 39 17 6 11 4 24-2 34-7 12-20 20-35 21-16 1-33-5-40-18C6 51 8 36 17 25 25 15 37 8 50 8Z"
-    fill="#e9b7ab"
+    d="M60 10c19 0 38 5 47 20 7 13 5 29-3 41-9 14-25 24-42 25-19 1-40-6-48-22C6 60 8 42 19 29 29 17 43 10 60 10Z"
+    fill="#eab6a6"
   />
-  <text x="50" y="62" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="34" fill="#7a1f2b">v</text>
   <path
-    d="M67 44c3-3 8-3 10 0 2 3 1 7-2 10l-8 8-8-8c-3-3-4-7-2-10 2-3 7-3 10 0Z"
+    d="M58 100C30 78 6 58 8 35 9 18 26 8 42 14 52 18 57 28 58 38 60 26 68 12 84 10 100 8 112 22 108 40 104 60 82 80 58 100Z"
+    transform="translate(2 4) scale(0.86)"
     fill="none"
-    stroke="#7a1f2b"
-    stroke-width="3"
+    stroke="#7d1f2e"
+    stroke-width="10"
+    stroke-linecap="round"
     stroke-linejoin="round"
   />
 </svg>
