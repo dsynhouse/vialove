@@ -1,7 +1,15 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "More Sugar";
+  src: url("/fonts/MoreSugar-Regular.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-display: "Fredoka", "Segoe UI", sans-serif;
+  --font-display: "More Sugar", "Fredoka", "Segoe UI", sans-serif;
   --font-sans: "Nunito", "Segoe UI", sans-serif;
   --font-hand: "Caveat", cursive;
 
