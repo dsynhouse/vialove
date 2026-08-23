@@ -3,55 +3,92 @@
 Grow closer, together. A relationship-growth app for the bonds that matter — couples,
 parent & child, friends, siblings, or anything else worth nurturing.
 
-Pick the kind of bond you want to grow, and vialove gives both people a shared space
-for honest daily check-ins, a dual-authored journal, a private vault for dreams, fears,
-regrets and goals, a weekly reflection ritual, calendar planning, and short mindful
-practices — all wrapped in a warm, editorial UI.
+Each person creates their own account, starts or joins a bond with an invite code, and
+gets a shared space for honest daily check-ins, a dual-authored journal, a private vault
+for dreams, fears, regrets and goals, a weekly reflection ritual, calendar planning, and
+short mindful practices — all synced live between both people.
 
-## Features
+## Architecture
 
-- **Bond onboarding** — Couple, Parent & Child, Friends, Siblings, or a custom bond, each
-  with its own tone, tagline and accent color.
-- **Daily check-in** — a mood ring, an optional note, and a private/shared visibility
-  toggle, with streak tracking.
-- **Shared journal** — reflective prompts for the real conversations, fun prompts for
-  the joy, tagged private or shared.
-- **Growth & the vault** — trackable shared/individual goals with progress and cheers,
-  plus a vault for dreams, aspirations, fears, worries, regrets and shame — visibility
-  is always the author's call.
-- **Plan** — mock calendar connect, a scheduler with discussion templates (state of the
-  bond, working through friction, future planning), and a date/hangout idea generator.
-- **Mindful space** — guided breathing, meditation and spiritual practices with an
-  animated timer.
-- **Weekly pulse** — five structured questions; answers stay hidden until both people
-  submit, so no one reacts to the other's answer before writing their own.
-- **Village** — curated support resources beyond the bond itself, plus a quiet
-  "support signal" to let the other person know you need extra care.
-- **Profile** — a personal growth timeline and badges built from everything you do
-  inside the bond.
+This is an npm-workspaces monorepo with two apps:
 
-Everything is interactive and persisted to `localStorage`; switch between both people's
-perspectives from the sidebar to see how the shared/private visibility model plays out
-on both sides — no backend needed for the demo.
+```
+apps/web     React + TypeScript + Vite SPA (Tailwind v4, Framer Motion, TanStack Query)
+apps/server  Express + TypeScript API (Drizzle ORM over SQLite, JWT cookie auth, Socket.IO)
+```
 
-## Stack
+- **Auth** — email/password, bcrypt-hashed, JWT in an httpOnly cookie.
+- **Bonds** — creating a bond generates an invite code; the second person joins with it.
+  Each bond is capped at two members.
+- **Data** — every feature (check-ins, journal, vault, goals, weekly pulse, calendar
+  events, mindful logs, support signals) is a real table, scoped to bond membership on
+  every request.
+- **Realtime** — Socket.IO rooms per bond. When one person checks in, journals, cheers a
+  goal, submits the weekly pulse, plans something, or sends a support signal, the other
+  person sees it live (a toast + an automatic data refresh), no reload needed.
+- **Visibility model** — every check-in, journal entry, and vault entry is marked private
+  or shared by its author; the API enforces this server-side, not just in the UI.
 
-- React 19 + TypeScript + Vite
-- Tailwind CSS v4
-- Framer Motion for motion/interaction
-- React Router (hash routing)
-- Fonts: [Fraunces](https://fonts.google.com/specimen/Fraunces) (display),
-  [Manrope](https://fonts.google.com/specimen/Manrope) (body),
-  [Caveat](https://fonts.google.com/specimen/Caveat) (handwritten accents)
+## Local development
 
-## Getting started
+Requires Node 22+.
 
 ```bash
 npm install
-npm run dev
+cp apps/server/.env.example apps/server/.env   # defaults work out of the box for local dev
+npm run db:migrate --workspace apps/server
+npm run dev                                     # runs the server (:4000) and web app (:5173) together
 ```
 
+Open http://localhost:5173 — the Vite dev server proxies `/api` and `/socket.io` to the
+backend, so no CORS setup is needed locally.
+
+Optional: seed two demo accounts already paired into one bond:
+
 ```bash
-npm run build   # type-check + production build
-npm run lint    # oxlint
+npm run db:seed --workspace apps/server
+# alex@example.com / password123
+# sam@example.com  / password123
 ```
+
+Useful scripts:
+
+```bash
+npm run dev:web       # web app only
+npm run dev:server    # server only
+npm run build          # typecheck + build both apps
+npm run lint            # lint both apps
+```
+
+## Deployment
+
+The two apps deploy independently.
+
+**Web (apps/web)** — deploy to Vercel: import the repo, set the project root to
+`apps/web` (framework: Vite). Set `VITE_API_URL` to your deployed server's URL. A
+`vercel.json` with SPA rewrites is already included.
+
+**Server (apps/server)** — deploy anywhere that runs a Docker container or a plain
+Node process (Render, Fly.io, Railway, a VPS):
+
+- Docker: `apps/server/Dockerfile` builds and runs the server; mount a volume at
+  `/app/apps/server/data` so the SQLite file persists across deploys.
+- Plain Node: `npm run build --workspace apps/server && npm start --workspace apps/server`
+  (runs migrations automatically on boot).
+- Required env vars: `PORT`, `CLIENT_ORIGIN` (your deployed web app's origin, for CORS
+  and cookie handling), `JWT_SECRET` (a long random string), `DATABASE_PATH`, and
+  `COOKIE_SECURE=true` (needed once the web app and API are on different domains, so the
+  auth cookie can be sent cross-site).
+
+**Local full-stack via Docker** — `docker compose up --build` runs just the server in a
+container with a persisted volume; run the web app with `npm run dev:web` against it.
+
+## Stack
+
+- React 19, TypeScript, Vite, React Router
+- Tailwind CSS v4, Framer Motion
+- TanStack Query (data fetching/caching) + Socket.IO client (realtime)
+- Express, Drizzle ORM, better-sqlite3, Socket.IO, Zod, JWT, bcrypt
+- Fonts: [Fraunces](https://fonts.google.com/specimen/Fraunces) (display),
+  [Manrope](https://fonts.google.com/specimen/Manrope) (body),
+  [Caveat](https://fonts.google.com/specimen/Caveat) (handwritten accents)
