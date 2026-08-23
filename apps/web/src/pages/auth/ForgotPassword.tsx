@@ -3,25 +3,24 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { Card, Button } from '../../components/ui';
-import { authApi, ApiError } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ForgotPassword() {
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const res = await authApi.forgotPassword(email);
-      setMessage(res.message);
-      setDevResetUrl(res.devResetUrl ?? null);
+      await forgotPassword(email);
+      setSent(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -30,23 +29,10 @@ export default function ForgotPassword() {
   return (
     <AuthLayout subtitle="We'll send a link to reset your password.">
       <Card className="p-6 sm:p-8">
-        {message ? (
-          <div className="text-center">
-            <p className="text-[15px] text-[var(--color-ink)]">{message}</p>
-            {devResetUrl && (
-              <div className="mt-5 rounded-xl bond-bg-soft p-4 text-left">
-                <p className="text-xs font-semibold uppercase tracking-wide bond-accent mb-1.5">
-                  Dev mode — no SMTP configured
-                </p>
-                <p className="text-[13px] text-black/55 mb-2">
-                  The email was logged to the server console instead of sent. Use this link directly:
-                </p>
-                <Link to={devResetUrl.replace(window.location.origin, '')} className="text-[13px] font-semibold bond-accent break-all">
-                  {devResetUrl}
-                </Link>
-              </div>
-            )}
-          </div>
+        {sent ? (
+          <p className="text-[15px] text-[var(--color-ink)] text-center">
+            If an account exists for <strong>{email}</strong>, a reset link is on its way.
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

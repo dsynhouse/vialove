@@ -10,24 +10,42 @@ short mindful practices — all synced live between both people.
 
 ## Architecture
 
-This is an npm-workspaces monorepo with two apps:
+A single-page app (`apps/web`) talking directly to [Supabase](https://supabase.com) —
+there's no separate backend server to host.
 
-```
-apps/web     React + TypeScript + Vite SPA (Tailwind v4, Framer Motion, TanStack Query)
-apps/server  Express + TypeScript API (Drizzle ORM over SQLite, JWT cookie auth, Socket.IO)
-```
-
-- **Auth** — email/password, bcrypt-hashed, JWT in an httpOnly cookie.
+- **Auth** — Supabase Auth (email/password). Password reset is Supabase's built-in
+  email flow.
+- **Database** — Postgres, with every table's access rules enforced by **Row Level
+  Security**, not application code. See `supabase/schema.sql` — that one file is the
+  entire backend: schema, RLS policies, and a few Postgres functions for the handful of
+  operations that need to be atomic (creating a bond generates its invite code and adds
+  the creator in one transaction; joining checks the 2-person cap; submitting the weekly
+  pulse finds-or-creates the week's row and upserts the response).
 - **Bonds** — creating a bond generates an invite code; the second person joins with it.
   Each bond is capped at two members.
-- **Data** — every feature (check-ins, journal, vault, goals, weekly pulse, calendar
-  events, mindful logs, support signals) is a real table, scoped to bond membership on
-  every request.
-- **Realtime** — Socket.IO rooms per bond. When one person checks in, journals, cheers a
-  goal, submits the weekly pulse, plans something, or sends a support signal, the other
-  person sees it live (a toast + an automatic data refresh), no reload needed.
 - **Visibility model** — every check-in, journal entry, and vault entry is marked private
-  or shared by its author; the API enforces this server-side, not just in the UI.
+  or shared by its author. This is enforced by RLS policies, not just hidden in the UI —
+  a private row is never sent to the other person's client in the first place.
+- **Weekly Pulse** — the blind-until-both-submit reveal (you can't see your partner's
+  answers for the current week until you've submitted your own) is an RLS policy, so it
+  holds even if someone opens the network tab.
+- **Realtime** — Supabase Realtime subscriptions on bond-scoped tables. When one person
+  checks in, journals, cheers a goal, submits the weekly pulse, plans something, or sends
+  a nudge, the other person sees it live (a toast + an automatic data refresh) and can see
+  when their partner is online right now, via Presence.
+- **Push notifications** — Web Push (VAPID), dispatched by a Supabase Edge Function
+  triggered by Database Webhooks. See `supabase/functions/send-push/README.md`.
+
+## Setting up a Supabase project
+
+1. Create a project at [supabase.com](https://supabase.com) (free tier is plenty).
+2. In the SQL Editor, paste and run the entirety of `supabase/schema.sql`.
+3. In Authentication → Providers → Email, decide whether to require email
+   confirmation before sign-in. The app handles both settings (a "check your email"
+   screen appears automatically if confirmation is required).
+4. From Settings → API, copy the **Project URL** and **anon public** key into
+   `apps/web/.env` (copy `apps/web/.env.example` first).
+5. (Optional) Set up push notifications — see `supabase/functions/send-push/README.md`.
 
 ## Local development
 
@@ -35,75 +53,35 @@ Requires Node 22+.
 
 ```bash
 npm install
-cp apps/server/.env.example apps/server/.env   # defaults work out of the box for local dev
-npm run db:migrate --workspace apps/server
-npm run dev                                     # runs the server (:4000) and web app (:5173) together
+cp apps/web/.env.example apps/web/.env   # fill in your Supabase project URL + anon key
+npm run dev
 ```
 
-Open http://localhost:5173 — the Vite dev server proxies `/api` and `/socket.io` to the
-backend, so no CORS setup is needed locally.
-
-Optional: seed two demo accounts already paired into one bond:
-
-```bash
-npm run db:seed --workspace apps/server
-# alex@example.com / password123
-# sam@example.com  / password123
-```
-
-Useful scripts:
-
-```bash
-npm run dev:web       # web app only
-npm run dev:server    # server only
-npm run build          # typecheck + build both apps
-npm run lint            # lint both apps
-```
+Open http://localhost:5173.
 
 ## Deployment
 
-The two apps deploy independently.
+Deploy `apps/web` to Vercel. Two ways to point Vercel at the right app in this
+monorepo — pick one:
 
-**Web (apps/web)** — deploy to Vercel. Two ways to point Vercel at the right app in
-this monorepo — pick one:
 - In the Vercel project's Settings → General, set **Root Directory** to `apps/web`
   (framework: Vite). `apps/web/vercel.json` (SPA rewrites) takes over from there.
 - Or leave Root Directory as the repo root — the root `vercel.json` already sets
   `installCommand`/`buildCommand`/`outputDirectory` to build just `apps/web` and
   deploy `apps/web/dist`, with no dashboard changes needed.
 
-Either way, set the `VITE_API_URL` env var in the Vercel project to your deployed
-server's URL (see below) — **the web app calls a relative `/api` path by default,
-which has nothing to talk to once it's static-hosted on Vercel**, so check this
-first if the site loads but nothing works (login, signup, etc. fail silently or
-with network errors).
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (and `VITE_VAPID_PUBLIC_KEY` if
+you set up push) as environment variables on the Vercel project — the anon key is
+safe to expose publicly, it has no access beyond what RLS policies allow.
 
-**Server (apps/server)** — deploy anywhere that runs a Docker container or a plain
-Node process (Render, Fly.io, Railway, a VPS):
-
-- Docker: `apps/server/Dockerfile` builds and runs the server; mount a volume at
-  `/app/apps/server/data` so the SQLite file persists across deploys.
-- Plain Node: `npm run build --workspace apps/server && npm start --workspace apps/server`
-  (runs migrations automatically on boot).
-- Required env vars: `PORT`, `CLIENT_ORIGIN` (your deployed web app's origin, for CORS
-  and cookie handling), `JWT_SECRET` (a long random string), `DATABASE_PATH`, and
-  `COOKIE_SECURE=true` (needed once the web app and API are on different domains, so the
-  auth cookie can be sent cross-site).
-- Optional: `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS`/`SMTP_FROM` for sending
-  password-reset emails — any SMTP provider works (Gmail, SendGrid, Resend, Postmark,
-  SES, ...). **Without these set, password-reset links are logged to the server console
-  instead of emailed** — fine for local dev, but set them in production or nobody can
-  actually receive their reset link.
-
-**Local full-stack via Docker** — `docker compose up --build` runs just the server in a
-container with a persisted volume; run the web app with `npm run dev:web` against it.
+There's nothing else to deploy — no server, no separate database to provision.
 
 ## Stack
 
 - React 19, TypeScript, Vite, React Router
 - Tailwind CSS v4, Framer Motion
-- TanStack Query (data fetching/caching) + Socket.IO client (realtime)
-- Express, Drizzle ORM, better-sqlite3, Socket.IO, Zod, JWT, bcrypt
-- Fonts: [Fraunces](https://fonts.google.com/specimen/Fraunces) (display),
-  [Manrope](https://fonts.google.com/specimen/Manrope) (body),
-  [Caveat](https://fonts.google.com/specimen/Caveat) (handwritten accents)
+- TanStack Query (data fetching/caching)
+- Supabase (Postgres + RLS, Auth, Realtime, Edge Functions)
+- Web Push API for notifications
+- Fonts: More Sugar (display/wordmark), [Nunito](https://fonts.google.com/specimen/Nunito)
+  (body), [Caveat](https://fonts.google.com/specimen/Caveat) (handwritten accents)

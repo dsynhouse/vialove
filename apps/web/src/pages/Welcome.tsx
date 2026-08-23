@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Heart, Sprout, Users, Users2, Sparkles, ArrowRight, ArrowLeft, Copy, Check, LogOut } from 'lucide-react';
 import { BOND_TYPES } from '../lib/bondMeta';
 import type { BondType } from '../lib/types';
-import { bondsApi, ApiError } from '../lib/api';
+import { bondsApi } from '../lib/api';
 import { useBond } from '../context/BondContext';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card } from '../components/ui';
@@ -35,7 +35,7 @@ export default function Welcome() {
       setActiveBondId(bond.id);
       setStep('created');
     },
-    onError: (err) => setError(err instanceof ApiError ? err.message : 'Something went wrong'),
+    onError: (err) => setError(err instanceof Error ? err.message : 'Something went wrong'),
   });
 
   const joinMutation = useMutation({
@@ -45,7 +45,7 @@ export default function Welcome() {
       setActiveBondId(bond.id);
       navigate('/dashboard');
     },
-    onError: (err) => setError(err instanceof ApiError ? err.message : 'Something went wrong'),
+    onError: (err) => setError(err instanceof Error ? err.message : 'Something went wrong'),
   });
 
   const createdBond = createMutation.data;

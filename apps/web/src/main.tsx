@@ -7,6 +7,12 @@ import App from './App.tsx';
 import { AuthProvider } from './context/AuthContext.tsx';
 import { BondProvider } from './context/BondContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
+import { registerServiceWorker } from './lib/push.ts';
+
+// Registering early (rather than only when the user opts in) means the
+// service worker is already active by the time they enable notifications —
+// this alone doesn't request permission or subscribe to anything.
+registerServiceWorker();
 
 const queryClient = new QueryClient({
   defaultOptions: {

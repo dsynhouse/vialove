@@ -1,19 +1,14 @@
 {
   "name": "vialove",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "workspaces": [
-    "apps/web",
-    "apps/server"
+    "apps/web"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace apps/server & npm run dev --workspace apps/web & wait",
-    "dev:web": "npm run dev --workspace apps/web",
-    "dev:server": "npm run dev --workspace apps/server",
-    "build": "npm run build --workspace apps/server && npm run build --workspace apps/web",
-    "lint": "npm run lint --workspace apps/web && npm run lint --workspace apps/server",
-    "db:migrate": "npm run db:migrate --workspace apps/server",
-    "db:seed": "npm run db:seed --workspace apps/server"
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "lint": "npm run lint --workspace apps/web"
   }
 }

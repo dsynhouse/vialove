@@ -4,7 +4,6 @@ import { ArrowRight } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { Card, Button } from '../../components/ui';
-import { ApiError } from '../../lib/api';
 
 export default function Login() {
   const { login } = useAuth();
@@ -22,7 +21,7 @@ export default function Login() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }

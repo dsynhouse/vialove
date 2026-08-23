@@ -4,7 +4,6 @@ import { ArrowRight } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { Card, Button } from '../../components/ui';
-import { ApiError } from '../../lib/api';
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -14,19 +13,40 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await signup(email, password, name);
-      navigate('/');
+      const { needsEmailConfirmation } = await signup(email, password, name);
+      if (needsEmailConfirmation) {
+        setCheckEmail(true);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkEmail) {
+    return (
+      <AuthLayout subtitle="Grow closer, together.">
+        <Card className="p-6 sm:p-8 text-center">
+          <p className="text-[15px] text-[var(--color-ink)]">
+            Almost there — we sent a confirmation link to <strong>{email}</strong>. Click it to activate your
+            account, then sign in.
+          </p>
+          <Link to="/login" className="inline-block mt-4 text-sm font-semibold bond-accent">
+            Back to sign in
+          </Link>
+        </Card>
+      </AuthLayout>
+    );
   }
 
   return (

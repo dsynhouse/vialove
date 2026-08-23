@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Award, Sun, BookHeart, Sprout, ClipboardCheck, Wind, Lock } from 'lucide-react';
+import { Award, Sun, BookHeart, Sprout, ClipboardCheck, Wind, Lock, Bell, BellOff } from 'lucide-react';
 import { useBond } from '../context/BondContext';
+import { useAuth } from '../context/AuthContext';
 import { useTimeline } from '../lib/queries';
-import { Card, SectionHeading, EmptyState, Skeleton } from '../components/ui';
+import { Card, SectionHeading, EmptyState, Skeleton, Button } from '../components/ui';
 import type { TimelineItem } from '../lib/types';
+import { disablePushNotifications, enablePushNotifications, getPushSubscription, pushSupported } from '../lib/push';
 
 const TYPE_ICON: Record<TimelineItem['type'], typeof Sun> = {
   checkin: Sun,
@@ -32,6 +35,8 @@ export default function Profile() {
         <StatCard label="Badges" value={`${earnedCount}/${badges.length || 8}`} />
         <StatCard label="Timeline events" value={timeline.length} />
       </div>
+
+      <NotificationsCard />
 
       <div>
         <p className="text-sm font-semibold text-black/50 mb-3">Badges</p>
@@ -93,6 +98,58 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     <Card className="p-4 text-center">
       <p className="font-display text-2xl text-[var(--color-ink)]">{value}</p>
       <p className="text-[11px] text-black/45 mt-0.5">{label}</p>
+    </Card>
+  );
+}
+
+function NotificationsCard() {
+  const { user } = useAuth();
+  const [enabled, setEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supported = pushSupported();
+
+  useEffect(() => {
+    if (!supported) return;
+    getPushSubscription().then((sub) => setEnabled(!!sub));
+  }, [supported]);
+
+  async function toggle() {
+    if (!user) return;
+    setError(null);
+    setLoading(true);
+    try {
+      if (enabled) {
+        await disablePushNotifications();
+        setEnabled(false);
+      } else {
+        await enablePushNotifications(user.id);
+        setEnabled(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!supported) return null;
+
+  return (
+    <Card className="p-5 flex items-center gap-4">
+      <div className="w-10 h-10 rounded-full bond-bg-soft bond-accent flex items-center justify-center shrink-0">
+        {enabled ? <Bell size={18} /> : <BellOff size={18} />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-[var(--color-ink)]">Push notifications</p>
+        <p className="text-[13px] text-black/45">
+          {enabled ? "You'll be notified even when the app is closed." : 'Get notified the moment your partner reaches out.'}
+        </p>
+        {error && <p className="text-[12px] text-red-600 mt-1">{error}</p>}
+      </div>
+      <Button size="sm" variant={enabled ? 'secondary' : 'primary'} disabled={loading} onClick={toggle}>
+        {loading ? '…' : enabled ? 'Turn off' : 'Enable'}
+      </Button>
     </Card>
   );
 }

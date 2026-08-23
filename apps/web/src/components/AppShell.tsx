@@ -21,6 +21,7 @@ import { useRealtimeSync } from '../lib/realtimeSync';
 import { useState } from 'react';
 import clsx from 'clsx';
 import { Wordmark } from './Logo';
+import { ThinkingOfYouButton } from './ThinkingOfYou';
 
 const NAV = [
   { to: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
-  useRealtimeSync();
+  const { partnerOnline } = useRealtimeSync();
 
   if (!activeBond || !user) return <>{children}</>;
 
@@ -86,7 +87,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <UserFooter name={user.name} otherName={otherPerson?.name} onLogout={logout} />
+        <div className="mt-2">
+          <ThinkingOfYouButton />
+        </div>
+
+        <UserFooter name={user.name} otherName={otherPerson?.name} otherOnline={partnerOnline} onLogout={logout} />
       </aside>
 
       <header className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-black/5 bg-white/70 backdrop-blur-sm sticky top-0 z-20">
@@ -112,6 +117,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+
+      <ThinkingOfYouButton variant="compact" />
 
       <nav className="sm:hidden fixed bottom-0 inset-x-0 z-20 bg-white/90 backdrop-blur-sm border-t border-black/5 flex overflow-x-auto no-scrollbar">
         {NAV.map((item) => (
@@ -157,7 +164,17 @@ function InviteBanner({ code, compact }: { code: string; compact?: boolean }) {
   );
 }
 
-function UserFooter({ name, otherName, onLogout }: { name: string; otherName?: string; onLogout: () => void }) {
+function UserFooter({
+  name,
+  otherName,
+  otherOnline,
+  onLogout,
+}: {
+  name: string;
+  otherName?: string;
+  otherOnline: boolean;
+  onLogout: () => void;
+}) {
   return (
     <div className="mt-4 rounded-xl bond-bg-soft px-3 py-2.5">
       <div className="flex items-center gap-2">
@@ -166,8 +183,18 @@ function UserFooter({ name, otherName, onLogout }: { name: string; otherName?: s
         </span>
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-semibold text-[var(--color-ink)] leading-none truncate">{name}</span>
-          <span className="block text-[11px] text-black/45 mt-0.5 truncate">
-            {otherName ? `with ${otherName}` : 'invite pending'}
+          <span className="flex items-center gap-1.5 text-[11px] text-black/45 mt-0.5 truncate">
+            {otherName ? (
+              <>
+                <span
+                  className={clsx('w-1.5 h-1.5 rounded-full shrink-0', otherOnline ? 'bg-green-500' : 'bg-black/20')}
+                  title={otherOnline ? `${otherName} is online` : `${otherName} is offline`}
+                />
+                with {otherName}{otherOnline && ' · online now'}
+              </>
+            ) : (
+              'invite pending'
+            )}
           </span>
         </span>
         <button onClick={onLogout} title="Sign out" className="shrink-0 text-black/35 hover:text-black/60">
